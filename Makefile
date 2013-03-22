@@ -33,9 +33,11 @@ $(OBJDIR)/%.o: $(OBJDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJDIR) $(JAVAOBJDIR) $(OBJS)
-	$(CC) -shared -o $(TARGET) $(LIBS) $(OBJS)
+	$(CC) -shared -Wl,--kill-at -o $(TARGET) $(LIBS) $(OBJS)
 
-jar:
+jar: DLPJava-sources.jar
+
+DLPJava-sources.jar:
 #	javac $(JAVAOBJDIR)/*.java
 	jar cvf DLPJava-sources.jar edu
 
