@@ -1,0 +1,10 @@
+A java wrapper for PortabilityLayer.dll, the library for controlling DLP.
+Both the header file (PortabilityLayer.h) and the dll file (PortabilityLayer.dll) should be copied to the current folder before attemp to build the package.
+
+The package requires SWIG (http://www.swig.org/) to build.
+
+The generated JAVA code is included in package jar file: DLPJava-sources.jar
+
+The jar file implements a java package: edu.uchc.DLPJava.
+
+A new dll file will be generated (DLPJava.dll), which is required by the JAVA code.
