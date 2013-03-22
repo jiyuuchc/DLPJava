@@ -21,6 +21,9 @@ LIBS = PortabilityLayer.dll
 $(OBJDIR):
 	mkdir -p $@
 
+$(JAVAOBJDIR):
+	mkdir -p $(JAVAOBJDIR)
+	
 .SECONDARY:
 
 $(OBJDIR)/%_wrap.c: %.i dlp.swg
@@ -29,7 +32,7 @@ $(OBJDIR)/%_wrap.c: %.i dlp.swg
 $(OBJDIR)/%.o: $(OBJDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET): $(OBJDIR) $(OBJS)
+$(TARGET): $(OBJDIR) $(JAVAOBJDIR) $(OBJS)
 	$(CC) -shared -o $(TARGET) $(LIBS) $(OBJS)
 
 jar:
