@@ -26,7 +26,7 @@ typedef char*			StringBuilder;
    g_err = STAT_OK;
    $action
    if (g_err != STAT_OK) {
-      SWIG_exception(SWIG_IOError, "DLP");
+      SWIG_exception(SWIG_RuntimeError, "DLP");
    }
 }
 

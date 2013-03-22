@@ -13,6 +13,10 @@ void __cdecl output_callback_func(const char * s)
   JNIEnv * jenv;
   jstring str;
   
+  if (g_OutputCallback == NULL) {
+    return;
+  }
+  
   (*g_jvm)->AttachCurrentThread(g_jvm, (void**)&jenv, 0);
   (*jenv)->ExceptionClear(jenv);
   str = (*jenv)->NewStringUTF(jenv, s);
@@ -22,8 +26,16 @@ void __cdecl output_callback_func(const char * s)
 }
 %}
 
-
 ////////////////////////////////
+
+%inline %{
+void InitSimple(Byte logLevel, Byte detail) {
+  InitPortabilityLayer(logLevel, detail, NULL);
+}
+%}
+
+//////////////////////////////
+
 
 %typemap(jni) IntPtr "jobjectArray"
 %typemap(jtype) IntPtr "byte [][]"
@@ -49,18 +61,31 @@ void __cdecl output_callback_func(const char * s)
 
 IntPtr GetAllBitPlanes(String name, UInt32 bpp, UInt32* Output);
 
-////////////////////////////////////
-
-%apply void {Status};
+//////////////////////
 
 %exception {
    g_err = STAT_OK;
    $action
    g_err = result;
    if (g_err != STAT_OK) {
-      SWIG_exception(SWIG_IOError, "DLP");
+      SWIG_exception(SWIG_RuntimeError, "DLP");
    }
 }
+
+///////////////////////////////////////////////
+
+
+%apply void {Status};
+
+Status WriteSYNC(Byte syncNumber, Byte enableBit, UInt32 delayUsec, UInt32 pulseWidth, Byte polarity);
+Status RunBatchFile(String name, Boolean stopOnError);
+Status RunBatchCommand(String command);
+Status WriteExternalImage(String name, UInt16 imageIndex);
+Status ChangeLogLevel(Byte logLevel);
+
+
+////////////////////////////////////
+
 
 %define CALLBACK_TYPEMAPS(CALLBACKTYPE, CFUNC, METHODNAME, METHODTYPE, CACHEVARIABLE)
 %typemap(jni) CALLBACKTYPE "jobject"
@@ -68,7 +93,12 @@ IntPtr GetAllBitPlanes(String name, UInt32 bpp, UInt32* Output);
 %typemap(jstype) CALLBACKTYPE "DLPJava.CALLBACKTYPE"
 %typemap(javain) CALLBACKTYPE "$javainput"
 %typemap(in) CALLBACKTYPE {
-  $1 = NULL;
+  $1 = CFUNC;
+  
+  if (CACHEVARIABLE != NULL) {
+    (*jenv)->DeleteGlobalRef(jenv, CACHEVARIABLE);
+  }
+  
   if ($input != NULL) {
      jclass objclass;
      jmethodID id;
@@ -78,12 +108,10 @@ IntPtr GetAllBitPlanes(String name, UInt32 bpp, UInt32* Output);
         SWIG_exception(SWIG_ValueError, "Invalid callback func.");
         return $null;
      }
-     if (CACHEVARIABLE != NULL) {
-        (*jenv)->DeleteGlobalRef(jenv, CACHEVARIABLE);
-     }
      CACHEVARIABLE = (*jenv)->NewGlobalRef(jenv, $input);
-     $1 = CFUNC;
      (*jenv)->GetJavaVM(jenv, &g_jvm);
+  } else {
+     CACHEVARIABLE = NULL;
   }
 }
 %enddef
@@ -92,19 +120,7 @@ CALLBACK_TYPEMAPS(OutputCallback, output_callback_func, OnOutput, (Ljava/lang/St
 
 Status InitPortabilityLayer(Byte logLevel, Byte detail, OutputCallback callback);
 
-
-///////////////////////////////////////////////
-
-Status WriteSYNC(Byte syncNumber, Byte enableBit, UInt32 delayUsec, UInt32 pulseWidth, Byte polarity);
-Status RunBatchFile(String name, Boolean stopOnError);
-Status RunBatchCommand(String command);
-Status WriteExternalImage(String name, UInt16 imageIndex);
-Status ChangeLogLevel(Byte logLevel);
-
-
 //////////////////////////////
-
-
 
 %pragma(java) jniclasscode=%{
   static {
