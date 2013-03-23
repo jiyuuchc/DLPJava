@@ -4,7 +4,7 @@ CFLAGS =	-c -O2 -g -Wall -fmessage-length=0 -I"$(JAVA_INCLUDE)" -I"$(JAVA_INCLUD
 MODULE =	DLPJava
 
 OBJDIR = build
-JAVAOBJDIR = edu/uchc/$(MODULE)
+JAVAOBJDIR = javasrc/edu/uchc/$(MODULE)
 
 SWIG = 	swig
 SWIGOPT =	-java -package edu.uchc.DLPJava -outdir $(JAVAOBJDIR)
